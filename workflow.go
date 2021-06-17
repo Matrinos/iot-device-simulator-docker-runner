@@ -3,18 +3,21 @@ package main
 import (
 	"time"
 
+	"github.com/docker/docker/api/types/container"
 	"github.com/pborman/uuid"
+	"github.com/phayes/freeport"
+	"github.com/teris-io/shortid"
 	"go.uber.org/cadence"
 	"go.uber.org/cadence/workflow"
 	"go.uber.org/zap"
 )
 
-type (
-	fileInfo struct {
-		FileName string
-		HostID   string
-	}
-)
+// type (
+// 	fileInfo struct {
+// 		FileName string
+// 		HostID   string
+// 	}
+// )
 
 // ApplicationName is the task list for this sample
 const ApplicationName = "FileProcessorGroup"
@@ -24,7 +27,7 @@ const ApplicationName = "FileProcessorGroup"
 var HostID = ApplicationName + "_" + uuid.New()
 
 //sampleFileProcessingWorkflow workflow decider
-func sampleFileProcessingWorkflow(ctx workflow.Context, fileID string) (err error) {
+func simulatorStartingWorkflow(ctx workflow.Context) (err error) {
 	// step 1: download resource file
 	ao := workflow.ActivityOptions{
 		ScheduleToStartTimeout: time.Second * 5,
@@ -40,12 +43,25 @@ func sampleFileProcessingWorkflow(ctx workflow.Context, fileID string) (err erro
 	}
 	ctx = workflow.WithActivityOptions(ctx, ao)
 
+	port, err := freeport.GetFreePort()
+	if err != nil {
+		return err
+	}
+
+	sid, err := shortid.New(1, shortid.DefaultABC, 2342)
+	if err != nil {
+		return err
+	}
+
+	shortID, _ := sid.Generate()
+	containerName := "matrinos.sim-" + shortID
+
 	// Retry the whole sequence from the first activity on any error
 	// to retry it on a different host. In a real application it might be reasonable to
 	// retry individual activities and the whole sequence discriminating between different types of errors.
 	// See the retryactivity sample for a more sophisticated retry implementation.
 	for i := 1; i < 5; i++ {
-		err = processFile(ctx, fileID)
+		err = runDocker(ctx, string(port), containerName)
 		if err == nil {
 			break
 		}
@@ -58,8 +74,8 @@ func sampleFileProcessingWorkflow(ctx workflow.Context, fileID string) (err erro
 	return err
 }
 
-func processFile(ctx workflow.Context, fileID string) (err error) {
-	var fInfo *fileInfo
+func runDocker(ctx workflow.Context, port string, containerName string) (err error) {
+	var fInfo *container.ContainerCreateCreatedBody
 	so := &workflow.SessionOptions{
 		CreationTimeout:  time.Minute,
 		ExecutionTimeout: time.Minute,
@@ -71,17 +87,19 @@ func processFile(ctx workflow.Context, fileID string) (err error) {
 	}
 	defer workflow.CompleteSession(sessionCtx)
 
-	err = workflow.ExecuteActivity(sessionCtx, downloadFileActivityName, fileID).Get(sessionCtx, &fInfo)
+	err = workflow.ExecuteActivity(sessionCtx, runSimulationActivityName,
+		port, containerName).Get(sessionCtx, &fInfo)
 	if err != nil {
 		return err
 	}
 
-	var fInfoProcessed *fileInfo
-	err = workflow.ExecuteActivity(sessionCtx, processFileActivityName, *fInfo).Get(sessionCtx, &fInfoProcessed)
-	if err != nil {
-		return err
-	}
+	// var fInfoProcessed *fileInfo
+	// err = workflow.ExecuteActivity(sessionCtx, processFileActivityName, *fInfo).Get(sessionCtx, &fInfoProcessed)
+	// if err != nil {
+	// 	return err
+	// }
 
-	err = workflow.ExecuteActivity(sessionCtx, uploadFileActivityName, *fInfoProcessed).Get(sessionCtx, nil)
-	return err
+	// err = workflow.ExecuteActivity(sessionCtx, uploadFileActivityName, *fInfoProcessed).Get(sessionCtx, nil)
+	// return err
+	return nil
 }

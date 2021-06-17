@@ -24,15 +24,9 @@ func TestUnitTestSuite(t *testing.T) {
 
 func (s *UnitTestSuite) SetupTest() {
 	s.env = s.NewTestWorkflowEnvironment()
-	s.env.RegisterWorkflow(sampleFileProcessingWorkflow)
-	s.env.RegisterActivityWithOptions(downloadFileActivity, activity.RegisterOptions{
-		Name: downloadFileActivityName,
-	})
-	s.env.RegisterActivityWithOptions(processFileActivity, activity.RegisterOptions{
-		Name: processFileActivityName,
-	})
-	s.env.RegisterActivityWithOptions(uploadFileActivity, activity.RegisterOptions{
-		Name: uploadFileActivityName,
+	s.env.RegisterWorkflow(simulatorStartingWorkflow)
+	s.env.RegisterActivityWithOptions(runSimulationActivity, activity.RegisterOptions{
+		Name: runSimulationActivityName,
 	})
 }
 
@@ -60,19 +54,11 @@ func (s *UnitTestSuite) Test_SampleFileProcessingWorkflow() {
 			var input string
 			s.NoError(args.Get(&input))
 			s.Equal(fileID, input)
-		case expectedCall[1]:
-			var input fileInfo
-			s.NoError(args.Get(&input))
-			s.Equal(input.HostID, HostID)
-		case expectedCall[2]:
-			var input fileInfo
-			s.NoError(args.Get(&input))
-			s.Equal(input.HostID, HostID)
 		default:
 			panic("unexpected activity call")
 		}
 	})
-	s.env.ExecuteWorkflow(sampleFileProcessingWorkflow, fileID)
+	s.env.ExecuteWorkflow(simulatorStartingWorkflow, fileID)
 
 	s.True(s.env.IsWorkflowCompleted())
 	s.NoError(s.env.GetWorkflowError())

@@ -34,7 +34,7 @@ func startWorkflow(h *core.WorkflowHelper, fileID string) {
 		ExecutionStartToCloseTimeout:    time.Minute,
 		DecisionTaskStartToCloseTimeout: time.Minute,
 	}
-	h.StartWorkflow(workflowOptions, "main.sampleFileProcessingWorkflow", fileID)
+	h.StartWorkflow(workflowOptions, "main.simulatorStartingWorkflow", fileID)
 }
 
 func main() {
@@ -47,10 +47,10 @@ func main() {
 
 	switch mode {
 	case "worker":
-		h.RegisterWorkflow(sampleFileProcessingWorkflow)
-		h.RegisterActivityWithAlias(downloadFileActivity, downloadFileActivityName)
-		h.RegisterActivityWithAlias(processFileActivity, processFileActivityName)
-		h.RegisterActivityWithAlias(uploadFileActivity, uploadFileActivityName)
+		h.RegisterWorkflow(simulatorStartingWorkflow)
+		h.RegisterActivityWithAlias(runSimulationActivity, runSimulationActivityName)
+		// h.RegisterActivityWithAlias(processFileActivity, processFileActivityName)
+		// h.RegisterActivityWithAlias(uploadFileActivity, uploadFileActivityName)
 		startWorkers(&h)
 
 		// The workers are supposed to be long running process that should not exit.
