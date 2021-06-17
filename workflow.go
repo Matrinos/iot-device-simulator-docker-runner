@@ -1,6 +1,9 @@
 package main
 
 import (
+	"errors"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/docker/docker/api/types/container"
@@ -61,7 +64,7 @@ func simulatorStartingWorkflow(ctx workflow.Context) (err error) {
 	// retry individual activities and the whole sequence discriminating between different types of errors.
 	// See the retryactivity sample for a more sophisticated retry implementation.
 	for i := 1; i < 5; i++ {
-		err = runDocker(ctx, string(port), containerName)
+		err = runDocker(ctx, strconv.Itoa(port), containerName)
 		if err == nil {
 			break
 		}
@@ -75,7 +78,7 @@ func simulatorStartingWorkflow(ctx workflow.Context) (err error) {
 }
 
 func runDocker(ctx workflow.Context, port string, containerName string) (err error) {
-	var fInfo *container.ContainerCreateCreatedBody
+	var containerResponse *container.ContainerCreateCreatedBody
 	so := &workflow.SessionOptions{
 		CreationTimeout:  time.Minute,
 		ExecutionTimeout: time.Minute,
@@ -86,9 +89,22 @@ func runDocker(ctx workflow.Context, port string, containerName string) (err err
 		return err
 	}
 	defer workflow.CompleteSession(sessionCtx)
+	userName := os.Getenv("USER")
 
+	if userName == "" {
+		return errors.New("Please specify the username for pulling docker image")
+	}
+
+	password := os.Getenv("PASSWORD")
+	if password == "" {
+		return errors.New("Please specify the username for pulling docker image")
+	}
+
+	// TODO: move docker image name to config?
 	err = workflow.ExecuteActivity(sessionCtx, runSimulationActivityName,
-		port, containerName).Get(sessionCtx, &fInfo)
+		userName, password,
+		port, "matrinos/iot-smart-device-simulator", containerName).Get(sessionCtx, &containerResponse)
+
 	if err != nil {
 		return err
 	}
