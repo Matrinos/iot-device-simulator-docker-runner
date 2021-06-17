@@ -34,7 +34,7 @@ func startWorkflow(h *core.WorkflowHelper, fileID string) {
 		ExecutionStartToCloseTimeout:    time.Minute,
 		DecisionTaskStartToCloseTimeout: time.Minute,
 	}
-	h.StartWorkflow(workflowOptions, sampleFileProcessingWorkflow, fileID)
+	h.StartWorkflow(workflowOptions, "main.sampleFileProcessingWorkflow", fileID)
 }
 
 func main() {

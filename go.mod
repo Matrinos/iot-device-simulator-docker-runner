@@ -18,3 +18,5 @@ require (
 	go.uber.org/zap v1.17.0
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
 )
+
+replace github.com/apache/thrift => github.com/apache/thrift v0.0.0-20190309152529-a9b748bb0e02
