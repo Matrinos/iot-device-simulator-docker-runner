@@ -22,7 +22,7 @@ func runSimulationActivity(ctx context.Context,
 	containerName string) (*container.ContainerCreateCreatedBody, error) {
 	logger := activity.GetLogger(ctx)
 	logger.Info("Running docker")
-	data, err := docker.RunContainer(userName, password, imageName, containerName, port, true)
+	data, err := docker.RunContainer(userName, password, imageName, containerName, port, false)
 
 	if err != nil {
 		logger.Error("Running simlation failed.", zap.Error(err))

@@ -84,6 +84,7 @@ func RunContainer(userName string,
 		return container.ContainerCreateCreatedBody{}, err
 	}
 
+	// TODO: need debug this to see if this fits cadence
 	if shouldWait {
 		statusCh, errCh := cli.ContainerWait(ctx, resp.ID, container.WaitConditionNotRunning)
 		select {

@@ -35,7 +35,7 @@ func simulatorStartingWorkflow(ctx workflow.Context) (err error) {
 	ao := workflow.ActivityOptions{
 		ScheduleToStartTimeout: time.Second * 5,
 		StartToCloseTimeout:    time.Minute,
-		HeartbeatTimeout:       time.Second * 2, // such a short timeout to make sample fail over very fast
+		HeartbeatTimeout:       time.Second * 60, // need debug to understand the right timeout setting.
 		RetryPolicy: &cadence.RetryPolicy{
 			InitialInterval:          time.Second,
 			BackoffCoefficient:       2.0,
@@ -51,7 +51,7 @@ func simulatorStartingWorkflow(ctx workflow.Context) (err error) {
 		return err
 	}
 
-	sid, err := shortid.New(1, shortid.DefaultABC, 2342)
+	sid, err := shortid.New(1, shortid.DefaultABC, uint64(time.Now().UnixNano()))
 	if err != nil {
 		return err
 	}
@@ -63,18 +63,17 @@ func simulatorStartingWorkflow(ctx workflow.Context) (err error) {
 	// to retry it on a different host. In a real application it might be reasonable to
 	// retry individual activities and the whole sequence discriminating between different types of errors.
 	// See the retryactivity sample for a more sophisticated retry implementation.
-	for i := 1; i < 5; i++ {
-		err = runDocker(ctx, strconv.Itoa(port), containerName)
-		if err == nil {
-			break
-		}
-	}
+	// TODO enable loop retry
+	// for i := 1; i < 5; i++ {
+	err = runDocker(ctx, strconv.Itoa(port), containerName)
 	if err != nil {
 		workflow.GetLogger(ctx).Error("Workflow failed.", zap.String("Error", err.Error()))
-	} else {
-		workflow.GetLogger(ctx).Info("Workflow completed.")
+		return err
 	}
-	return err
+	// }
+
+	workflow.GetLogger(ctx).Info("Workflow completed.")
+	return nil
 }
 
 func runDocker(ctx workflow.Context, port string, containerName string) (err error) {
@@ -92,12 +91,12 @@ func runDocker(ctx workflow.Context, port string, containerName string) (err err
 	userName := os.Getenv("USER")
 
 	if userName == "" {
-		return errors.New("Please specify the username for pulling docker image")
+		return errors.New("please specify the username for pulling docker image")
 	}
 
 	password := os.Getenv("PASSWORD")
 	if password == "" {
-		return errors.New("Please specify the username for pulling docker image")
+		return errors.New("please specify the username for pulling docker image")
 	}
 
 	// TODO: move docker image name to config?
