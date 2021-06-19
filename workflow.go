@@ -30,7 +30,7 @@ const ApplicationName = "SimulatorRunningGroup"
 var HostID = ApplicationName + "_" + uuid.New()
 
 //sampleFileProcessingWorkflow workflow decider
-func simulatorStartingWorkflow(ctx workflow.Context) (err error) {
+func simulatorStartingWorkflow(ctx workflow.Context, device interface{}) (err error) {
 	// step 1: download resource file
 	ao := workflow.ActivityOptions{
 		ScheduleToStartTimeout: time.Second * 5,
@@ -72,6 +72,9 @@ func simulatorStartingWorkflow(ctx workflow.Context) (err error) {
 	}
 	// }
 
+	//TODO:
+	// call the start end point with device parameter
+
 	workflow.GetLogger(ctx).Info("Workflow completed.")
 	return nil
 }
@@ -88,7 +91,7 @@ func runDocker(ctx workflow.Context, port string, containerName string) (err err
 		return err
 	}
 	defer workflow.CompleteSession(sessionCtx)
-	userName := os.Getenv("USER")
+	userName := os.Getenv("DOCKER_USER")
 
 	if userName == "" {
 		return errors.New("please specify the username for pulling docker image")
