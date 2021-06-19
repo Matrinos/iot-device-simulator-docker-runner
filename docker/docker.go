@@ -1,4 +1,4 @@
-package main
+package docker
 
 import (
 	"context"
@@ -35,24 +35,24 @@ func RunContainer(userName string,
 	containerName string,
 	port string,
 	shouldWait bool,
-) error {
+) (container.ContainerCreateCreatedBody, error) {
 
 	authStr, err := GenAuthString(userName, password)
 
 	if err != nil {
-		return err
+		return container.ContainerCreateCreatedBody{}, err
 	}
 
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
-		return err
+		return container.ContainerCreateCreatedBody{}, err
 	}
 
 	reader, err := cli.ImagePull(ctx, imageName,
 		types.ImagePullOptions{RegistryAuth: authStr})
 	if err != nil {
-		return err
+		return container.ContainerCreateCreatedBody{}, err
 	}
 	// TODO: writing to log
 	io.Copy(os.Stdout, reader)
@@ -77,19 +77,20 @@ func RunContainer(userName string,
 
 	resp, err := cli.ContainerCreate(ctx, config, hostConfig, nil, nil, containerName)
 	if err != nil {
-		return err
+		return container.ContainerCreateCreatedBody{}, err
 	}
 
 	if err := cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
-		return err
+		return container.ContainerCreateCreatedBody{}, err
 	}
 
+	// TODO: need debug this to see if this fits cadence
 	if shouldWait {
 		statusCh, errCh := cli.ContainerWait(ctx, resp.ID, container.WaitConditionNotRunning)
 		select {
 		case err := <-errCh:
 			if err != nil {
-				return err
+				return container.ContainerCreateCreatedBody{}, err
 			}
 		case <-statusCh:
 		}
@@ -97,11 +98,11 @@ func RunContainer(userName string,
 
 	out, err := cli.ContainerLogs(ctx, resp.ID, types.ContainerLogsOptions{ShowStdout: true})
 	if err != nil {
-		return err
+		return container.ContainerCreateCreatedBody{}, err
 	}
 
 	// TODO: writing to log
 	stdcopy.StdCopy(os.Stdout, os.Stderr, out)
 
-	return nil
+	return resp, nil
 }
