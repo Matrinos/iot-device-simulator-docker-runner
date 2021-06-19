@@ -30,7 +30,7 @@ const ApplicationName = "SimulatorRunningGroup"
 var HostID = ApplicationName + "_" + uuid.New()
 
 //sampleFileProcessingWorkflow workflow decider
-func simulatorStartingWorkflow(ctx workflow.Context, device interface{}) (err error) {
+func simulatorStartingWorkflow(ctx workflow.Context) (err error) {
 	// step 1: download resource file
 	ao := workflow.ActivityOptions{
 		ScheduleToStartTimeout: time.Second * 5,
