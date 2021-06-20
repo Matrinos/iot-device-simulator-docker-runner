@@ -35,7 +35,7 @@ func simulatorStartingWorkflow(ctx workflow.Context) (err error) {
 	ao := workflow.ActivityOptions{
 		ScheduleToStartTimeout: time.Second * 5,
 		StartToCloseTimeout:    time.Minute,
-		HeartbeatTimeout:       time.Second * 60, // need debug to understand the right timeout setting.
+		HeartbeatTimeout:       time.Second * 300, // need debug to understand the right timeout setting.
 		RetryPolicy: &cadence.RetryPolicy{
 			InitialInterval:          time.Second,
 			BackoffCoefficient:       2.0,
@@ -97,7 +97,7 @@ func runDocker(ctx workflow.Context, port string, containerName string) (err err
 		return errors.New("please specify the username for pulling docker image")
 	}
 
-	password := os.Getenv("PASSWORD")
+	password := os.Getenv("DOCKER_PASSWORD")
 	if password == "" {
 		return errors.New("please specify the username for pulling docker image")
 	}
