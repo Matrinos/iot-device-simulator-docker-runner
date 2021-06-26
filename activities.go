@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/go-resty/resty/v2"
@@ -49,20 +48,7 @@ func startDeviceActivity(ctx context.Context, port int, deviceJsonbytes []byte) 
 
 	url := fmt.Sprintf("%s:%d/start", os.Getenv("CONTAINER_HOST"), port)
 
-	pong := false
-	sleep := 1
-	for !pong {
-		_, err := client.R().
-			Get(pingUrl)
-		if err != nil {
-			logger.Info("Ping simulator failed", zap.Error(err))
-			time.Sleep(time.Second * time.Duration(sleep))
-			sleep = sleep * 2
-		} else {
-			logger.Info("Simulator device online!")
-			pong = true
-		}
-	}
+	PingSimulator(client, pingUrl, logger)
 
 	resp, err := client.R().
 		SetHeader("Content-Type", "application/json").
