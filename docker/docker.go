@@ -77,11 +77,11 @@ func RunContainer(userName string,
 
 	resp, err := cli.ContainerCreate(ctx, config, hostConfig, nil, nil, containerName)
 	if err != nil {
-		return container.ContainerCreateCreatedBody{}, err
+		return resp, err
 	}
 
 	if err := cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
-		return container.ContainerCreateCreatedBody{}, err
+		return resp, err
 	}
 
 	// TODO: need debug this to see if this fits cadence
@@ -98,7 +98,7 @@ func RunContainer(userName string,
 
 	out, err := cli.ContainerLogs(ctx, resp.ID, types.ContainerLogsOptions{ShowStdout: true})
 	if err != nil {
-		return container.ContainerCreateCreatedBody{}, err
+		return resp, err
 	}
 
 	// TODO: writing to log
