@@ -91,13 +91,13 @@ func runDocker(ctx workflow.Context, port string, containerName string) (err err
 		return err
 	}
 	defer workflow.CompleteSession(sessionCtx)
-	userName := os.Getenv("DOCKER_USER")
+	userName := os.Getenv("DOCKERHUB_USERNAME")
 
 	if userName == "" {
 		return errors.New("please specify the username for pulling docker image")
 	}
 
-	password := os.Getenv("DOCKER_PASSWORD")
+	password := os.Getenv("DOCKERHUB_TOKEN")
 	if password == "" {
 		return errors.New("please specify the username for pulling docker image")
 	}
