@@ -8,6 +8,8 @@ import (
 	"go.uber.org/zap"
 )
 
+var getPingSimulator = GetPingSimulator
+
 func PingSimulator(client *resty.Client, pingUrl string, timeoutSeconds int, logger *zap.Logger) (pong bool, err error) {
 	pong = false
 	sleepSeconds := 1
@@ -18,8 +20,7 @@ func PingSimulator(client *resty.Client, pingUrl string, timeoutSeconds int, log
 			// time's up
 			return pong, errors.New("ping device timed out")
 		default:
-			_, err := client.R().
-				Get(pingUrl)
+			_, err := getPingSimulator(client, pingUrl)
 			if err != nil {
 				logger.Info("Ping simulator failed", zap.Error(err))
 				time.Sleep(time.Second * time.Duration(sleepSeconds))
