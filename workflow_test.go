@@ -6,10 +6,12 @@ import (
 	"testing"
 
 	"github.com/docker/docker/api/types/container"
+	"github.com/go-resty/resty/v2"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/cadence/activity"
 	"go.uber.org/cadence/encoded"
 	"go.uber.org/cadence/testsuite"
+	"go.uber.org/zap"
 )
 
 type UnitTestSuite struct {
@@ -29,6 +31,10 @@ func (s *UnitTestSuite) SetupTest() {
 	s.env.RegisterActivityWithOptions(runSimulationActivity, activity.RegisterOptions{
 		Name: runSimulationActivityName,
 	})
+	s.env.RegisterActivityWithOptions(startDeviceActivity, activity.RegisterOptions{
+		Name: startDeviceActivityName,
+	})
+
 }
 
 func (s *UnitTestSuite) TearDownTest() {
@@ -38,6 +44,7 @@ func (s *UnitTestSuite) TearDownTest() {
 func (s *UnitTestSuite) Test_RunDockerProcessingWorkflow() {
 	expectedCall := []string{
 		"runSimulationActivityName",
+		"startDeviceActivityName",
 	}
 
 	var activityCalled []string
@@ -74,7 +81,23 @@ func (s *UnitTestSuite) Test_RunDockerProcessingWorkflow() {
 		return container.ContainerCreateCreatedBody{}, nil
 	}
 
-	s.env.ExecuteWorkflow(simulatorStartingWorkflow)
+	originalPingSimulator := pingSimulator
+	defer func() { pingSimulator = originalPingSimulator }()
+
+	pingSimulator = func(client *resty.Client, pingUrl string, durationSeconds int, logger *zap.Logger) (bool, error) {
+		return true, nil
+	}
+
+	originalPostDevice := postStartDevice
+	defer func() { postStartDevice = originalPostDevice }()
+
+	postStartDevice = func(client *resty.Client, url string, body []byte) (*resty.Response, error) {
+		return &resty.Response{}, nil
+	}
+
+	var deviceJsonBytes = []byte("")
+
+	s.env.ExecuteWorkflow(simulatorStartingWorkflow, deviceJsonBytes)
 
 	s.True(s.env.IsWorkflowCompleted())
 	s.NoError(s.env.GetWorkflowError())

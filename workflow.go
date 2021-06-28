@@ -30,14 +30,14 @@ const ApplicationName = "SimulatorRunningGroup"
 var HostID = ApplicationName + "_" + uuid.New()
 
 //sampleFileProcessingWorkflow workflow decider
-func simulatorStartingWorkflow(ctx workflow.Context) (err error) {
+func simulatorStartingWorkflow(ctx workflow.Context, deviceJsonBytes []byte) (err error) {
 	// step 1: download resource file
 	ao := workflow.ActivityOptions{
 		ScheduleToStartTimeout: time.Second * 5,
 		StartToCloseTimeout:    time.Minute,
 		HeartbeatTimeout:       time.Second * 300, // need debug to understand the right timeout setting.
 		RetryPolicy: &cadence.RetryPolicy{
-			InitialInterval:          time.Second,
+			InitialInterval:          time.Second * 10,
 			BackoffCoefficient:       2.0,
 			MaximumInterval:          time.Minute,
 			ExpirationInterval:       time.Minute * 10,
@@ -72,8 +72,13 @@ func simulatorStartingWorkflow(ctx workflow.Context) (err error) {
 	}
 	// }
 
-	//TODO:
 	// call the start end point with device parameter
+	err = StartDevice(ctx, port, deviceJsonBytes)
+
+	if err != nil {
+		workflow.GetLogger(ctx).Error("Workflow failed.", zap.String("Error", err.Error()))
+		return
+	}
 
 	workflow.GetLogger(ctx).Info("Workflow completed.")
 	return nil
@@ -119,5 +124,32 @@ func runDocker(ctx workflow.Context, port string, containerName string) (err err
 
 	// err = workflow.ExecuteActivity(sessionCtx, uploadFileActivityName, *fInfoProcessed).Get(sessionCtx, nil)
 	// return err
+	return nil
+}
+
+func StartDevice(ctx workflow.Context, port int, deviceJsonBytes []byte) (err error) {
+	ao := workflow.ActivityOptions{
+		ScheduleToCloseTimeout: time.Second * 60,
+		ScheduleToStartTimeout: time.Second * 60,
+		StartToCloseTimeout:    time.Second * 60,
+		HeartbeatTimeout:       time.Second * 10,
+		WaitForCancellation:    false,
+	}
+
+	ctx = workflow.WithActivityOptions(ctx, ao)
+
+	if err != nil {
+		return err
+	}
+
+	var res []byte
+
+	err = workflow.ExecuteActivity(ctx, startDeviceActivityName,
+		port, deviceJsonBytes).Get(ctx, &res)
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

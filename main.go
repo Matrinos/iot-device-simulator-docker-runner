@@ -44,6 +44,7 @@ func main() {
 	// case "worker":
 	h.RegisterWorkflow(simulatorStartingWorkflow)
 	h.RegisterActivityWithAlias(runSimulationActivity, runSimulationActivityName)
+	h.RegisterActivityWithAlias(startDeviceActivity, startDeviceActivityName)
 	// h.RegisterActivityWithAlias(processFileActivity, processFileActivityName)
 	// h.RegisterActivityWithAlias(uploadFileActivity, uploadFileActivityName)
 	startWorkers(&h)
