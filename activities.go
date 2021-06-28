@@ -14,6 +14,8 @@ import (
 )
 
 var runContainer = docker.RunContainer
+var pingSimulator = PingSimulator
+var postStartDevice = PostStartDevice
 
 /**
  * The activities used by running simulation workflow.
@@ -45,16 +47,11 @@ func startDeviceActivity(ctx context.Context, port int, deviceJsonbytes []byte) 
 	client := resty.New()
 
 	pingUrl := fmt.Sprintf("%s:%d/ping", os.Getenv("CONTAINER_HOST"), port)
+	pingSimulator(client, pingUrl, logger)
 
 	url := fmt.Sprintf("%s:%d/start", os.Getenv("CONTAINER_HOST"), port)
 
-	PingSimulator(client, pingUrl, logger)
-
-	resp, err := client.R().
-		SetHeader("Content-Type", "application/json").
-		SetBody(deviceJsonbytes).
-		Post(url)
-
+	resp, err := postStartDevice(client, url, deviceJsonbytes)
 	if err != nil {
 		logger.Info("Failed to parse start device result", zap.Error(err))
 		return nil, err
