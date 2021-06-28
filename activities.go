@@ -47,7 +47,13 @@ func startDeviceActivity(ctx context.Context, port int, deviceJsonbytes []byte) 
 	client := resty.New()
 
 	pingUrl := fmt.Sprintf("%s:%d/ping", os.Getenv("CONTAINER_HOST"), port)
-	pingSimulator(client, pingUrl, logger)
+	// TODO: Extract default timeout to config file
+	_, err := pingSimulator(client, pingUrl, 10, logger)
+
+	if err != nil {
+		logger.Info("Could not ping simulator before timeout.", zap.Error(err))
+		return nil, err
+	}
 
 	url := fmt.Sprintf("%s:%d/start", os.Getenv("CONTAINER_HOST"), port)
 

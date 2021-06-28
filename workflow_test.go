@@ -84,8 +84,8 @@ func (s *UnitTestSuite) Test_RunDockerProcessingWorkflow() {
 	originalPingSimulator := pingSimulator
 	defer func() { pingSimulator = originalPingSimulator }()
 
-	pingSimulator = func(client *resty.Client, pingUrl string, logger *zap.Logger) bool {
-		return true
+	pingSimulator = func(client *resty.Client, pingUrl string, durationSeconds int, logger *zap.Logger) (bool, error) {
+		return true, nil
 	}
 
 	originalPostDevice := postStartDevice
