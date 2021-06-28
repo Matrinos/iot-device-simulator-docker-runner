@@ -44,7 +44,7 @@ func startDeviceActivity(ctx context.Context, port int, deviceJsonbytes []byte) 
 	logger.Info("Starting Simulated Device")
 	client := resty.New()
 
-	pingUrl := fmt.Sprintf("%s:%d/start", os.Getenv("CONTAINER_HOST"), port)
+	pingUrl := fmt.Sprintf("%s:%d/ping", os.Getenv("CONTAINER_HOST"), port)
 
 	url := fmt.Sprintf("%s:%d/start", os.Getenv("CONTAINER_HOST"), port)
 
