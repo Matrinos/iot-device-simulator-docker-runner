@@ -56,14 +56,14 @@ func startDeviceActivity(ctx context.Context, port int, deviceJsonbytes []byte) 
 	}
 
 	url := fmt.Sprintf("%s:%d/start", os.Getenv("CONTAINER_HOST"), port)
-
 	resp, err := postStartDevice(client, url, deviceJsonbytes)
+
 	if err != nil {
 		logger.Info("Failed to parse start device result", zap.Error(err))
 		return nil, err
 	}
-	return resp.Body(), nil
 
+	return resp.Body(), nil
 }
 
 // TODO: poll device status
