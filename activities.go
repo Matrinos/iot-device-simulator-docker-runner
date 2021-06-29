@@ -48,7 +48,7 @@ func startDeviceActivity(ctx context.Context, containerName string,
 	client := resty.New()
 
 	// TODO: https??
-	pingURL := fmt.Sprintf("http://%s:%d/ping", containerName, "8080")
+	pingURL := fmt.Sprintf("http://%s:%d/ping", containerName, 8080)
 	// TODO: Extract default timeout to config file
 	_, err := pingSimulator(client, pingURL, 10, logger)
 
@@ -58,7 +58,7 @@ func startDeviceActivity(ctx context.Context, containerName string,
 	}
 
 	// TODO: https??
-	url := fmt.Sprintf("http://%s:%d/start", containerName, "8080")
+	url := fmt.Sprintf("http://%s:%d/start", containerName, 8080)
 	resp, err := postStartDevice(client, url, deviceJsonbytes)
 
 	if err != nil {
