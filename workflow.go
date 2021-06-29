@@ -73,7 +73,7 @@ func simulatorStartingWorkflow(ctx workflow.Context, deviceJsonBytes []byte) (er
 	// }
 
 	// call the start end point with device parameter
-	err = StartDevice(ctx, port, deviceJsonBytes)
+	err = StartDevice(ctx, containerName, port, deviceJsonBytes)
 
 	if err != nil {
 		workflow.GetLogger(ctx).Error("Workflow failed.", zap.String("Error", err.Error()))
@@ -133,7 +133,8 @@ func runDocker(ctx workflow.Context, port string, containerName string) (err err
 	return nil
 }
 
-func StartDevice(ctx workflow.Context, port int, deviceJsonBytes []byte) (err error) {
+func StartDevice(ctx workflow.Context, containerName string,
+	port int, deviceJsonBytes []byte) (err error) {
 	ao := workflow.ActivityOptions{
 		ScheduleToCloseTimeout: time.Second * 60,
 		ScheduleToStartTimeout: time.Second * 60,
@@ -150,7 +151,9 @@ func StartDevice(ctx workflow.Context, port int, deviceJsonBytes []byte) (err er
 
 	var res []byte
 
-	err = workflow.ExecuteActivity(ctx, startDeviceActivityName,
+	err = workflow.ExecuteActivity(ctx,
+		startDeviceActivityName,
+		containerName,
 		port, deviceJsonBytes).Get(ctx, &res)
 
 	if err != nil {
