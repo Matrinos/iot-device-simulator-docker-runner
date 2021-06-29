@@ -40,6 +40,7 @@ func runSimulationActivity(ctx context.Context,
 	return &data, nil
 }
 
+// TODO: port is not useful coz we are accessing via internal network
 func startDeviceActivity(ctx context.Context, containerName string,
 	port int, deviceJsonbytes []byte) ([]byte, error) {
 	logger := activity.GetLogger(ctx)
@@ -47,7 +48,7 @@ func startDeviceActivity(ctx context.Context, containerName string,
 	client := resty.New()
 
 	// TODO: https??
-	pingURL := fmt.Sprintf("http://%s:%d/ping", containerName, port)
+	pingURL := fmt.Sprintf("http://%s:%d/ping", containerName, "8080")
 	// TODO: Extract default timeout to config file
 	_, err := pingSimulator(client, pingURL, 10, logger)
 
@@ -57,7 +58,7 @@ func startDeviceActivity(ctx context.Context, containerName string,
 	}
 
 	// TODO: https??
-	url := fmt.Sprintf("http://%s:%d/start", containerName, port)
+	url := fmt.Sprintf("http://%s:%d/start", containerName, "8080")
 	resp, err := postStartDevice(client, url, deviceJsonbytes)
 
 	if err != nil {
