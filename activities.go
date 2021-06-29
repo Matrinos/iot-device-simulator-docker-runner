@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/go-resty/resty/v2"
@@ -28,10 +27,10 @@ const (
 
 func runSimulationActivity(ctx context.Context,
 	userName string, password string, port string, imageName string,
-	containerName string) (*container.ContainerCreateCreatedBody, error) {
+	containerName string, networkName string) (*container.ContainerCreateCreatedBody, error) {
 	logger := activity.GetLogger(ctx)
 	logger.Info("Running docker")
-	data, err := runContainer(userName, password, imageName, containerName, port, false)
+	data, err := runContainer(userName, password, imageName, containerName, port, networkName, false)
 
 	if err != nil {
 		logger.Error("Running simlation failed.", zap.Error(err))
@@ -41,12 +40,13 @@ func runSimulationActivity(ctx context.Context,
 	return &data, nil
 }
 
-func startDeviceActivity(ctx context.Context, port int, deviceJsonbytes []byte) ([]byte, error) {
+func startDeviceActivity(ctx context.Context, containerName string,
+	port int, deviceJsonbytes []byte) ([]byte, error) {
 	logger := activity.GetLogger(ctx)
 	logger.Info("Starting Simulated Device")
 	client := resty.New()
 
-	pingUrl := fmt.Sprintf("%s:%d/ping", os.Getenv("CONTAINER_HOST"), port)
+	pingUrl := fmt.Sprintf("%s:%d/ping", containerName, port)
 	// TODO: Extract default timeout to config file
 	_, err := pingSimulator(client, pingUrl, 10, logger)
 
@@ -55,7 +55,7 @@ func startDeviceActivity(ctx context.Context, port int, deviceJsonbytes []byte) 
 		return nil, err
 	}
 
-	url := fmt.Sprintf("%s:%d/start", os.Getenv("CONTAINER_HOST"), port)
+	url := fmt.Sprintf("%s:%d/start", containerName, port)
 	resp, err := postStartDevice(client, url, deviceJsonbytes)
 
 	if err != nil {

@@ -74,6 +74,7 @@ func (s *UnitTestSuite) Test_RunDockerProcessingWorkflow() {
 		imageName string,
 		containerName string,
 		port string,
+		networkName string,
 		shouldWait bool) (
 		container.ContainerCreateCreatedBody, error) {
 		// This will be called, do whatever you want to,
