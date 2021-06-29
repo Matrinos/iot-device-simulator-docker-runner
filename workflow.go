@@ -107,10 +107,16 @@ func runDocker(ctx workflow.Context, port string, containerName string) (err err
 		return errors.New("please specify the username for pulling docker image")
 	}
 
+	networkName := os.Getenv("DOCKER_NETWORK")
+	if networkName == "" {
+		return errors.New("please specify the networkName for running the docker")
+	}
+
 	// TODO: move docker image name to config?
 	err = workflow.ExecuteActivity(sessionCtx, runSimulationActivityName,
 		userName, password,
-		port, "matrinos/iot-smart-device-simulator", containerName).Get(sessionCtx, &containerResponse)
+		port, "matrinos/iot-smart-device-simulator",
+		containerName, networkName).Get(sessionCtx, &containerResponse)
 
 	if err != nil {
 		return err

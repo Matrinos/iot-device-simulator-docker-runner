@@ -9,6 +9,7 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	networktypes "github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/docker/go-connections/nat"
@@ -34,6 +35,7 @@ func RunContainer(userName string,
 	imageName string,
 	containerName string,
 	port string,
+	networkName string,
 	shouldWait bool,
 ) (container.ContainerCreateCreatedBody, error) {
 
@@ -75,7 +77,14 @@ func RunContainer(userName string,
 		},
 	}
 
-	resp, err := cli.ContainerCreate(ctx, config, hostConfig, nil, nil, containerName)
+	networkingConfig := networktypes.NetworkingConfig{
+		EndpointsConfig: map[string]*networktypes.EndpointSettings{
+			networkName: {},
+		},
+	}
+
+	resp, err := cli.ContainerCreate(
+		ctx, config, hostConfig, &networkingConfig, nil, containerName)
 	if err != nil {
 		return resp, err
 	}
