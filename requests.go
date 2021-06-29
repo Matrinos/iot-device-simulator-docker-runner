@@ -8,3 +8,8 @@ func PostStartDevice(client *resty.Client, url string, body []byte) (*resty.Resp
 		SetBody(body).
 		Post(url)
 }
+
+func GetPingSimulator(client *resty.Client, url string) (*resty.Response, error) {
+	return client.R().
+		Get(url)
+}
