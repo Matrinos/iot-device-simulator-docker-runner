@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/go-resty/resty/v2"
@@ -47,9 +46,6 @@ func startDeviceActivity(ctx context.Context, containerName string,
 	logger := activity.GetLogger(ctx)
 	logger.Info("Starting Simulated Device")
 	client := resty.New()
-
-	// temp code, wait 20 seconds b4 pinging
-	time.Sleep(time.Second * time.Duration(20))
 
 	// TODO: https??
 	pingURL := fmt.Sprintf("http://%s:%d/ping", containerName, 8080)
