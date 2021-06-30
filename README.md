@@ -11,8 +11,6 @@ Steps to run this project:
 export DOCKERHUB_TOKEN=VNXN9nbywVdaBOkE
 export DOCKERHUB_USERNAME=matrinos
 export DOCKER_NETWORK=matrinos-network
-cd matrinos
-docker 
 ./bin/main
 ```
 
