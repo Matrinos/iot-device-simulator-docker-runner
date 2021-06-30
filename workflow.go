@@ -136,10 +136,10 @@ func runDocker(ctx workflow.Context, port string, containerName string) (err err
 func StartDevice(ctx workflow.Context, containerName string,
 	port int, deviceJsonBytes []byte) (err error) {
 	ao := workflow.ActivityOptions{
-		ScheduleToCloseTimeout: time.Second * 60,
+		ScheduleToCloseTimeout: time.Second * 3,
 		ScheduleToStartTimeout: time.Second * 60,
 		StartToCloseTimeout:    time.Second * 60,
-		HeartbeatTimeout:       time.Second * 10,
+		HeartbeatTimeout:       time.Second * 30,
 		WaitForCancellation:    false,
 	}
 
