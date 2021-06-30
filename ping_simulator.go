@@ -20,11 +20,13 @@ func PingSimulator(client *resty.Client, pingUrl string, timeoutSeconds int, log
 			// time's up
 			return pong, errors.New("ping device timed out")
 		default:
+			// Delay before first ping. It is most likely the
+			// sim is still not ready at this time.
+			time.Sleep(time.Second * time.Duration(sleepSeconds))
 			_, err := getPingSimulator(client, pingUrl)
 			if err != nil {
 				logger.Info("Ping simulator failed", zap.Error(err))
-				time.Sleep(time.Second * time.Duration(sleepSeconds))
-				// sleepSeconds = sleepSeconds * 2
+				sleepSeconds = sleepSeconds * 2
 			} else {
 				logger.Info("Simulator device online!")
 				pong = true
