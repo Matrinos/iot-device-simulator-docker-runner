@@ -30,8 +30,8 @@ const ApplicationName = "SimulatorRunningGroup"
 var HostID = ApplicationName + "_" + uuid.New()
 
 //sampleFileProcessingWorkflow workflow decider
-func simulatorStartingWorkflow(ctx workflow.Context, deviceJsonBytes []byte) (err error) {
-	// step 1: download resource file
+func simulatorStartingWorkflow(ctx workflow.Context,
+	deviceJsonBytes []byte) (err error) {
 	ao := workflow.ActivityOptions{
 		ScheduleToStartTimeout: time.Second * 5,
 		StartToCloseTimeout:    time.Minute,
@@ -136,7 +136,6 @@ func runDocker(ctx workflow.Context, port string, containerName string) (err err
 func StartDevice(ctx workflow.Context, containerName string,
 	port int, deviceJsonBytes []byte) (err error) {
 	ao := workflow.ActivityOptions{
-		ScheduleToCloseTimeout: time.Second * 3,
 		ScheduleToStartTimeout: time.Second * 60,
 		StartToCloseTimeout:    time.Second * 60,
 		HeartbeatTimeout:       time.Second * 30,
