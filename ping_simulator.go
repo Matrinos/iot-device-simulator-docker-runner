@@ -12,7 +12,7 @@ var getPingSimulator = GetPingSimulator
 
 func PingSimulator(client *resty.Client, pingUrl string, timeoutSeconds int, logger *zap.Logger) (pong bool, err error) {
 	pong = false
-	sleepSeconds := 1
+	sleepSeconds := 5
 	timer := time.NewTimer(time.Duration(timeoutSeconds) * time.Second)
 	for !pong {
 		select {
