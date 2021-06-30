@@ -37,7 +37,7 @@ func simulatorStartingWorkflow(ctx workflow.Context, deviceJsonBytes []byte) (er
 		StartToCloseTimeout:    time.Minute,
 		HeartbeatTimeout:       time.Second * 300, // need debug to understand the right timeout setting.
 		RetryPolicy: &cadence.RetryPolicy{
-			InitialInterval:          time.Second * 10,
+			InitialInterval:          time.Second * 30,
 			BackoffCoefficient:       2.0,
 			MaximumInterval:          time.Minute,
 			ExpirationInterval:       time.Minute * 10,

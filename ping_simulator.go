@@ -24,7 +24,7 @@ func PingSimulator(client *resty.Client, pingUrl string, timeoutSeconds int, log
 			if err != nil {
 				logger.Info("Ping simulator failed", zap.Error(err))
 				time.Sleep(time.Second * time.Duration(sleepSeconds))
-				sleepSeconds = sleepSeconds * 2
+				// sleepSeconds = sleepSeconds * 2
 			} else {
 				logger.Info("Simulator device online!")
 				pong = true

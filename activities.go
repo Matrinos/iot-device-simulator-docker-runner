@@ -47,6 +47,9 @@ func startDeviceActivity(ctx context.Context, containerName string,
 	logger.Info("Starting Simulated Device")
 	client := resty.New()
 
+	// temp code, wait 20 seconds b4 pinging
+	time.Sleep(time.Second * time.Duration(20))
+
 	// TODO: https??
 	pingURL := fmt.Sprintf("http://%s:%d/ping", containerName, 8080)
 	// TODO: Extract default timeout to config file
