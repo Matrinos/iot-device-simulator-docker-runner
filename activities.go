@@ -50,7 +50,7 @@ func startDeviceActivity(ctx context.Context, containerName string,
 	// TODO: https??
 	pingURL := fmt.Sprintf("http://%s:%d/ping", containerName, 8080)
 	// TODO: Extract default timeout to config file
-	_, err := pingSimulator(client, pingURL, 10, logger)
+	_, err := pingSimulator(client, pingURL, 30, logger)
 
 	if err != nil {
 		logger.Info("Could not ping simulator before timeout.", zap.Error(err))
