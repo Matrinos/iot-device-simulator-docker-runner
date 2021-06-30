@@ -7,7 +7,11 @@ Steps to run this project:
 1) You need a cadence service running. 
 2) Run the following command
 ```
-./bin/main -m worker
+```bash
+export DOCKERHUB_TOKEN=VNXN9nbywVdaBOkE
+export DOCKERHUB_USERNAME=matrinos
+export DOCKER_NETWORK=matrinos-network
+./bin/main
 ```
 
 TODO
