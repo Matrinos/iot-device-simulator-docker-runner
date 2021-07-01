@@ -29,9 +29,13 @@ const ApplicationName = "SimulatorRunningGroup"
 // In real world case, you would use a hostname or ip address as HostID.
 var HostID = ApplicationName + "_" + uuid.New()
 
+type SimulatorStartResult struct {
+	ContainerName string `json:"containerName"`
+}
+
 //sampleFileProcessingWorkflow workflow decider
 func simulatorStartingWorkflow(ctx workflow.Context,
-	deviceJsonBytes []byte) (err error) {
+	deviceJsonBytes []byte) (result *SimulatorStartResult, err error) {
 	ao := workflow.ActivityOptions{
 		ScheduleToStartTimeout: time.Second * 5,
 		StartToCloseTimeout:    time.Minute,
@@ -48,12 +52,12 @@ func simulatorStartingWorkflow(ctx workflow.Context,
 
 	port, err := freeport.GetFreePort()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	sid, err := shortid.New(1, shortid.DefaultABC, uint64(time.Now().UnixNano()))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	shortID, _ := sid.Generate()
@@ -68,7 +72,7 @@ func simulatorStartingWorkflow(ctx workflow.Context,
 	err = runDocker(ctx, strconv.Itoa(port), containerName)
 	if err != nil {
 		workflow.GetLogger(ctx).Error("Workflow failed.", zap.String("Error", err.Error()))
-		return err
+		return nil, err
 	}
 	// }
 
@@ -81,7 +85,9 @@ func simulatorStartingWorkflow(ctx workflow.Context,
 	}
 
 	workflow.GetLogger(ctx).Info("Workflow completed.")
-	return nil
+	return &SimulatorStartResult{
+		ContainerName: containerName,
+	}, nil
 }
 
 func runDocker(ctx workflow.Context, port string, containerName string) (err error) {
