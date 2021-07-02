@@ -33,7 +33,6 @@ type SimulatorStartResult struct {
 	ContainerName string `json:"containerName"`
 }
 
-//sampleFileProcessingWorkflow workflow decider
 func simulatorStartingWorkflow(ctx workflow.Context,
 	deviceJsonBytes []byte) (result *SimulatorStartResult, err error) {
 	ao := workflow.ActivityOptions{
@@ -52,12 +51,12 @@ func simulatorStartingWorkflow(ctx workflow.Context,
 
 	port, err := freeport.GetFreePort()
 	if err != nil {
-		return nil, err
+		return &SimulatorStartResult{}, err
 	}
 
 	sid, err := shortid.New(1, shortid.DefaultABC, uint64(time.Now().UnixNano()))
 	if err != nil {
-		return nil, err
+		return &SimulatorStartResult{}, err
 	}
 
 	shortID, _ := sid.Generate()
@@ -69,10 +68,10 @@ func simulatorStartingWorkflow(ctx workflow.Context,
 	// See the retryactivity sample for a more sophisticated retry implementation.
 	// TODO enable loop retry
 	// for i := 1; i < 5; i++ {
-	err = runDocker(ctx, strconv.Itoa(port), containerName)
+	err = RunDocker(ctx, strconv.Itoa(port), containerName)
 	if err != nil {
 		workflow.GetLogger(ctx).Error("Workflow failed.", zap.String("Error", err.Error()))
-		return nil, err
+		return &SimulatorStartResult{}, err
 	}
 	// }
 
@@ -90,7 +89,7 @@ func simulatorStartingWorkflow(ctx workflow.Context,
 	}, nil
 }
 
-func runDocker(ctx workflow.Context, port string, containerName string) (err error) {
+func RunDocker(ctx workflow.Context, port string, containerName string) (err error) {
 	var containerResponse *container.ContainerCreateCreatedBody
 	so := &workflow.SessionOptions{
 		CreationTimeout:  time.Minute,
