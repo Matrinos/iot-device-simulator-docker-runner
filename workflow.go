@@ -33,6 +33,11 @@ type SimulatorStartResult struct {
 	ContainerName string `json:"containerName"`
 }
 
+type SimulatorStatusResult struct {
+	Status    SimulatorStatus `json:"status"`
+	Timestamp time.Time       `json:"timestamp"`
+}
+
 func simulatorStartingWorkflow(ctx workflow.Context,
 	deviceJsonBytes []byte) (result *SimulatorStartResult, err error) {
 	ao := workflow.ActivityOptions{
@@ -89,6 +94,39 @@ func simulatorStartingWorkflow(ctx workflow.Context,
 	}, nil
 }
 
+func simulatorStatusWorkflow(ctx workflow.Context,
+	containerName string) (result *SimulatorStatusResult, err error) {
+	ao := workflow.ActivityOptions{
+		ScheduleToStartTimeout: time.Second * 5,
+		StartToCloseTimeout:    time.Minute,
+		HeartbeatTimeout:       time.Second * 300, // need debug to understand the right timeout setting.
+		RetryPolicy: &cadence.RetryPolicy{
+			InitialInterval:          time.Second * 30,
+			BackoffCoefficient:       2.0,
+			MaximumInterval:          time.Minute,
+			ExpirationInterval:       time.Minute * 10,
+			NonRetriableErrorReasons: []string{"bad-error"},
+		},
+	}
+	ctx = workflow.WithActivityOptions(ctx, ao)
+	workflow.GetLogger(ctx).Info("Workflow started.")
+
+	if err != nil {
+		workflow.GetLogger(ctx).Error("Workflow failed.", zap.String("Error", err.Error()))
+		return
+	}
+
+	status, err := GetDeviceStatus(ctx, containerName)
+
+	if err != nil {
+		workflow.GetLogger(ctx).Error("Workflow failed.", zap.String("Error", err.Error()))
+		return
+	}
+
+	workflow.GetLogger(ctx).Info("Workflow completed.")
+	return &status, nil
+}
+
 func RunDocker(ctx workflow.Context, port string, containerName string) (err error) {
 	var containerResponse *container.ContainerCreateCreatedBody
 	so := &workflow.SessionOptions{
@@ -127,14 +165,6 @@ func RunDocker(ctx workflow.Context, port string, containerName string) (err err
 		return err
 	}
 
-	// var fInfoProcessed *fileInfo
-	// err = workflow.ExecuteActivity(sessionCtx, processFileActivityName, *fInfo).Get(sessionCtx, &fInfoProcessed)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// err = workflow.ExecuteActivity(sessionCtx, uploadFileActivityName, *fInfoProcessed).Get(sessionCtx, nil)
-	// return err
 	return nil
 }
 
@@ -165,4 +195,31 @@ func StartDevice(ctx workflow.Context, containerName string,
 	}
 
 	return nil
+}
+
+func GetDeviceStatus(ctx workflow.Context, containerName string) (res SimulatorStatusResult, err error) {
+	ao := workflow.ActivityOptions{
+		ScheduleToStartTimeout: time.Second * 60,
+		StartToCloseTimeout:    time.Second * 60,
+		HeartbeatTimeout:       time.Second * 30,
+		WaitForCancellation:    false,
+	}
+
+	ctx = workflow.WithActivityOptions(ctx, ao)
+
+	err = workflow.ExecuteActivity(ctx,
+		getSimulatorStatusActivityName,
+		containerName).Get(ctx, &res)
+
+	if err != nil {
+		return SimulatorStatusResult{
+			Status:    Error,
+			Timestamp: time.Now(),
+		}, nil
+	}
+
+	return SimulatorStatusResult{
+		Status:    res.Status,
+		Timestamp: time.Now(),
+	}, err
 }

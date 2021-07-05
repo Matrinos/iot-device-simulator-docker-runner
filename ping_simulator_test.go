@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"testing"
 
@@ -24,8 +25,9 @@ func (s *PingSimulatorSuite) SetupTest() {
 func (s *PingSimulatorSuite) TestPingDevice() {
 	originalGetPingSimulator := getPingSimulator
 	defer func() { getPingSimulator = originalGetPingSimulator }()
-	getPingSimulator = func(client *resty.Client, url string) (*resty.Response, error) {
-		return &resty.Response{}, nil
+	getPingSimulator = func(client *resty.Client, url string, result interface{}) error {
+		json.Unmarshal([]byte("{}"), &result)
+		return nil
 	}
 
 	result, _ := PingSimulator(s.client, "", 10, s.logger)
@@ -35,8 +37,8 @@ func (s *PingSimulatorSuite) TestPingDevice() {
 func (s *PingSimulatorSuite) TestPingDeviceTimeout() {
 	originalGetPingSimulator := getPingSimulator
 	defer func() { getPingSimulator = originalGetPingSimulator }()
-	getPingSimulator = func(client *resty.Client, url string) (*resty.Response, error) {
-		return nil, errors.New("error")
+	getPingSimulator = func(client *resty.Client, url string, result interface{}) error {
+		return errors.New("error")
 	}
 
 	result, _ := PingSimulator(s.client, "", 1, s.logger)

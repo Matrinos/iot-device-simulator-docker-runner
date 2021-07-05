@@ -8,7 +8,7 @@ import (
 	"go.uber.org/zap"
 )
 
-var getPingSimulator = GetPingSimulator
+var getPingSimulator = HttpGet
 
 func PingSimulator(client *resty.Client, pingUrl string, timeoutSeconds int, logger *zap.Logger) (pong bool, err error) {
 	pong = false
@@ -23,7 +23,8 @@ func PingSimulator(client *resty.Client, pingUrl string, timeoutSeconds int, log
 			// Delay before first ping. It is most likely the
 			// sim is still not ready at this time.
 			time.Sleep(time.Second * time.Duration(sleepSeconds))
-			_, err := getPingSimulator(client, pingUrl)
+			// var result interface{}
+			err = getPingSimulator(client, pingUrl, nil)
 			if err != nil {
 				logger.Info("Ping simulator failed", zap.Error(err))
 				sleepSeconds = sleepSeconds * 2
