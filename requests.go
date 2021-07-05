@@ -1,6 +1,10 @@
 package main
 
-import "github.com/go-resty/resty/v2"
+import (
+	"encoding/json"
+
+	"github.com/go-resty/resty/v2"
+)
 
 func PostStartDevice(client *resty.Client, url string, body []byte) (*resty.Response, error) {
 	return client.R().
@@ -9,7 +13,12 @@ func PostStartDevice(client *resty.Client, url string, body []byte) (*resty.Resp
 		Post(url)
 }
 
-func GetPingSimulator(client *resty.Client, url string) (*resty.Response, error) {
-	return client.R().
+func HttpGet(client *resty.Client, url string, result interface{}) error {
+	resp, err := client.R().
 		Get(url)
+	if err != nil {
+		return err
+	}
+	json.Unmarshal(resp.Body(), result)
+	return nil
 }

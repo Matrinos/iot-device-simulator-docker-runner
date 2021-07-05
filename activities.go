@@ -15,14 +15,15 @@ import (
 var runContainer = docker.RunContainer
 var pingSimulator = PingSimulator
 var postStartDevice = PostStartDevice
+var httpGet = HttpGet
 
 /**
  * The activities used by running simulation workflow.
  */
 const (
-	runSimulationActivityName        = "runSimulationActivityName"
-	startDeviceActivityName          = "startDeviceActivityName"
-	pingSimulationDeviceActivityName = "pingSimulationDeviceActivityName"
+	runSimulationActivityName      = "runSimulationActivityName"
+	startDeviceActivityName        = "startDeviceActivityName"
+	getSimulatorStatusActivityName = "getSimulatorStatusActivityName"
 )
 
 func runSimulationActivity(ctx context.Context,
@@ -71,4 +72,28 @@ func startDeviceActivity(ctx context.Context, containerName string,
 	return resp.Body(), nil
 }
 
-// TODO: poll device status
+type StatusResponseBody struct {
+	Status SimulatorStatus `json:"status"`
+}
+
+func getSimulatorStatusActivity(ctx context.Context, containerName string) (result *SimulatorStatusResult, err error) {
+	logger := activity.GetLogger(ctx)
+	logger.Info("Getting simulator status form container", zap.String("containerName", containerName))
+	client := resty.New()
+
+	// TODO: https??
+	statusURL := fmt.Sprintf("http://%s:%d/status", containerName, 8080)
+	err = httpGet(client, statusURL, &result)
+
+	if err != nil {
+		logger.Info("Could not ping simulator before timeout.", zap.Error(err))
+		return &SimulatorStatusResult{}, err
+	}
+
+	if err != nil {
+		logger.Info("Could not parse status response", zap.Error(err))
+		return &SimulatorStatusResult{}, err
+	}
+
+	return result, nil
+}
