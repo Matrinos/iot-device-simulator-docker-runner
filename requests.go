@@ -6,7 +6,7 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
-func PostStartDevice(client *resty.Client, url string, body []byte) (*resty.Response, error) {
+func PostCommandToDevice(client *resty.Client, url string, body []byte) (*resty.Response, error) {
 	return client.R().
 		SetHeader("Content-Type", "application/json").
 		SetBody(body).
