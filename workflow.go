@@ -50,6 +50,7 @@ func simulatorStartingWorkflow(ctx workflow.Context,
 			MaximumInterval:          time.Minute,
 			ExpirationInterval:       time.Minute * 10,
 			NonRetriableErrorReasons: []string{"bad-error"},
+			MaximumAttempts:          5,
 		},
 	}
 	ctx = workflow.WithActivityOptions(ctx, ao)
@@ -106,6 +107,7 @@ func simulatorStatusWorkflow(ctx workflow.Context,
 			MaximumInterval:          time.Minute,
 			ExpirationInterval:       time.Minute * 10,
 			NonRetriableErrorReasons: []string{"bad-error"},
+			MaximumAttempts:          5,
 		},
 	}
 	ctx = workflow.WithActivityOptions(ctx, ao)
