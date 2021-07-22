@@ -32,6 +32,7 @@ func main() {
 	h.RegisterActivityWithAlias(runSimulationActivity, runSimulationActivityName)
 	h.RegisterActivityWithAlias(startDeviceActivity, startDeviceActivityName)
 	h.RegisterActivityWithAlias(getSimulatorStatusActivity, getSimulatorStatusActivityName)
+	h.RegisterActivityWithAlias(stopDeviceActivity, stopDeviceActivityName)
 
 	startWorkers(&h)
 

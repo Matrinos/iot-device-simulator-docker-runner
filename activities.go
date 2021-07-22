@@ -24,6 +24,7 @@ var stopContainer = docker.StopContainer
 const (
 	runSimulationActivityName      = "runSimulationActivityName"
 	startDeviceActivityName        = "startDeviceActivityName"
+	stopDeviceActivityName         = "stopDeviceActivityName"
 	getSimulatorStatusActivityName = "getSimulatorStatusActivityName"
 )
 
