@@ -74,8 +74,7 @@ func startDeviceActivity(ctx context.Context, containerName string,
 	return resp.Body(), nil
 }
 
-func stopDeviceActivity(ctx context.Context, containerName string,
-	port int, deviceJsonbytes []byte) error {
+func stopDeviceActivity(ctx context.Context, containerName string) error {
 	logger := activity.GetLogger(ctx)
 	logger.Info("Stopping Simulated Device")
 
