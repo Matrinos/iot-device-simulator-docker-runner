@@ -77,33 +77,11 @@ func stopDeviceActivity(ctx context.Context, containerName string,
 	port int, deviceJsonbytes []byte) error {
 	logger := activity.GetLogger(ctx)
 	logger.Info("Stopping Simulated Device")
-	client := resty.New()
 
-	// TODO: https??
-	pingURL := fmt.Sprintf("http://%s:%d/ping", containerName, 8080)
-	// TODO: Extract default timeout to config file
-	// also need tune the time out value. 10 seconds was not working
-	// not sure if 30 sec is a good value, but it seems working for now
-	_, err := pingSimulator(client, pingURL, 30, logger)
+	err := stopContainer(containerName)
 
 	if err != nil {
-		logger.Info("Could not ping simulator before timeout.", zap.Error(err))
-		return err
-	}
-
-	// TODO: https??
-	url := fmt.Sprintf("http://%s:%d/stop", containerName, 8080)
-	_, err = postCommandToDevice(client, url, make([]byte, 0))
-
-	if err != nil {
-		logger.Info("Failed to parse Stop device result", zap.Error(err))
-		return err
-	}
-
-	err = stopContainer(containerName)
-
-	if err != nil {
-		logger.Error("Stopping simlation failed.", zap.Error(err))
+		logger.Error("Stopping simulation failed.", zap.Error(err))
 		return err
 	}
 
