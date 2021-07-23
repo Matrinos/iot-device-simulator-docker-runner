@@ -29,16 +29,16 @@ func main() {
 
 	h.RegisterWorkflow(simulatorStatusWorkflow)
 	h.RegisterWorkflow(simulatorStartingWorkflow)
+	h.RegisterWorkflow(simulatorStopWorkflow)
+
 	h.RegisterActivityWithAlias(runSimulationActivity, runSimulationActivityName)
 	h.RegisterActivityWithAlias(startDeviceActivity, startDeviceActivityName)
 	h.RegisterActivityWithAlias(getSimulatorStatusActivity, getSimulatorStatusActivityName)
+	h.RegisterActivityWithAlias(stopDeviceActivity, stopDeviceActivityName)
 
 	startWorkers(&h)
 
 	// The workers are supposed to be long running process that should not exit.
 	// Use select{} to block indefinitely for samples, you can quit by CMD+C.
 	select {}
-	// case "trigger":
-	// 	startWorkflow(&h, uuid.New())
-	// }
 }

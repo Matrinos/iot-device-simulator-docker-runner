@@ -14,8 +14,9 @@ import (
 
 var runContainer = docker.RunContainer
 var pingSimulator = PingSimulator
-var postStartDevice = PostStartDevice
+var postCommandToDevice = PostCommandToDevice
 var httpGet = HttpGet
+var stopContainer = docker.StopContainer
 
 /**
  * The activities used by running simulation workflow.
@@ -23,6 +24,7 @@ var httpGet = HttpGet
 const (
 	runSimulationActivityName      = "runSimulationActivityName"
 	startDeviceActivityName        = "startDeviceActivityName"
+	stopDeviceActivityName         = "stopDeviceActivityName"
 	getSimulatorStatusActivityName = "getSimulatorStatusActivityName"
 )
 
@@ -62,7 +64,7 @@ func startDeviceActivity(ctx context.Context, containerName string,
 
 	// TODO: https??
 	url := fmt.Sprintf("http://%s:%d/start", containerName, 8080)
-	resp, err := postStartDevice(client, url, deviceJsonbytes)
+	resp, err := postCommandToDevice(client, url, deviceJsonbytes)
 
 	if err != nil {
 		logger.Info("Failed to parse start device result", zap.Error(err))
@@ -70,6 +72,20 @@ func startDeviceActivity(ctx context.Context, containerName string,
 	}
 
 	return resp.Body(), nil
+}
+
+func stopDeviceActivity(ctx context.Context, containerName string) error {
+	logger := activity.GetLogger(ctx)
+	logger.Info("Stopping Simulated Device")
+
+	err := stopContainer(containerName)
+
+	if err != nil {
+		logger.Error("Stopping simulation failed.", zap.Error(err))
+		return err
+	}
+
+	return nil
 }
 
 type StatusResponseBody struct {

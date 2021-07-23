@@ -95,10 +95,10 @@ func (s *UnitTestSuite) Test_RunDockerProcessingWorkflow() {
 		return true, nil
 	}
 
-	originalPostDevice := postStartDevice
-	defer func() { postStartDevice = originalPostDevice }()
+	originalPostDevice := postCommandToDevice
+	defer func() { postCommandToDevice = originalPostDevice }()
 
-	postStartDevice = func(client *resty.Client, url string, body []byte) (*resty.Response, error) {
+	postCommandToDevice = func(client *resty.Client, url string, body []byte) (*resty.Response, error) {
 		return &resty.Response{}, nil
 	}
 

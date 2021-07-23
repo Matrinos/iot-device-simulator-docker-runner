@@ -95,6 +95,34 @@ func simulatorStartingWorkflow(ctx workflow.Context,
 	}, nil
 }
 
+func simulatorStopWorkflow(ctx workflow.Context,
+	containerName string) (err error) {
+	ao := workflow.ActivityOptions{
+		ScheduleToStartTimeout: time.Second * 10,
+		StartToCloseTimeout:    time.Minute * 5,
+		HeartbeatTimeout:       time.Second * 300, // need debug to understand the right timeout setting.
+		RetryPolicy: &cadence.RetryPolicy{
+			InitialInterval:          time.Second * 30,
+			BackoffCoefficient:       2.0,
+			MaximumInterval:          time.Minute,
+			ExpirationInterval:       time.Minute * 10,
+			NonRetriableErrorReasons: []string{"bad-error"},
+		},
+	}
+	ctx = workflow.WithActivityOptions(ctx, ao)
+	workflow.GetLogger(ctx).Info("Simulation stopping workflow started.")
+
+	err = StopDevice(ctx, containerName)
+
+	if err != nil {
+		workflow.GetLogger(ctx).Error("Simulation stopping workflow failed.", zap.String("Error", err.Error()))
+		return err
+	}
+
+	workflow.GetLogger(ctx).Info("Simulation stopping workflow completed.")
+	return nil
+}
+
 func simulatorStatusWorkflow(ctx workflow.Context,
 	containerName string) (result *SimulatorStatusResult, err error) {
 	ao := workflow.ActivityOptions{
@@ -112,11 +140,6 @@ func simulatorStatusWorkflow(ctx workflow.Context,
 	}
 	ctx = workflow.WithActivityOptions(ctx, ao)
 	workflow.GetLogger(ctx).Info("Workflow started.")
-
-	if err != nil {
-		workflow.GetLogger(ctx).Error("Workflow failed.", zap.String("Error", err.Error()))
-		return
-	}
 
 	status, err := GetDeviceStatus(ctx, containerName)
 
@@ -181,10 +204,6 @@ func StartDevice(ctx workflow.Context, containerName string,
 
 	ctx = workflow.WithActivityOptions(ctx, ao)
 
-	if err != nil {
-		return err
-	}
-
 	var res []byte
 
 	err = workflow.ExecuteActivity(ctx,
@@ -193,6 +212,32 @@ func StartDevice(ctx workflow.Context, containerName string,
 		port, deviceJsonBytes).Get(ctx, &res)
 
 	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func StopDevice(ctx workflow.Context, containerName string) (err error) {
+	so := &workflow.SessionOptions{
+		CreationTimeout:  time.Minute,
+		ExecutionTimeout: time.Minute,
+	}
+
+	sessionCtx, err := workflow.CreateSession(ctx, so)
+	if err != nil {
+		return err
+	}
+	defer workflow.CompleteSession(sessionCtx)
+
+	var v interface{}
+
+	err = workflow.ExecuteActivity(sessionCtx,
+		stopDeviceActivity,
+		containerName).Get(sessionCtx, &v)
+
+	if err != nil {
+		workflow.GetLogger(sessionCtx).Error("stopDeviceActivity failed.", zap.String("Error", err.Error()))
 		return err
 	}
 

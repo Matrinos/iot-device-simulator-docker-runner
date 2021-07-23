@@ -115,3 +115,16 @@ func RunContainer(userName string,
 
 	return resp, nil
 }
+
+func StopContainer(
+	containerName string,
+) error {
+
+	ctx := context.Background()
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return err
+	}
+
+	return cli.ContainerStop(ctx, containerName, nil)
+}

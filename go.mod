@@ -3,7 +3,7 @@ module io.matrinos/docker/runner
 go 1.16
 
 require (
-	github.com/Matrinos/iot-cadence-go-core v0.0.0-20210619125056-5cb4de703787
+	github.com/Matrinos/iot-cadence-go-core v0.0.0-20210722093445-7a7ede2418ef
 	github.com/containerd/containerd v1.5.2 // indirect
 	github.com/docker/docker v20.10.7+incompatible
 	github.com/docker/go-connections v0.4.0
